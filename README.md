@@ -294,6 +294,11 @@ This is pretty boilerplate EventStore code where a stream is read with a startin
 
 Play with the application, there's alot more you can do. Note how the `EventStore` instance is injected into `TodoService` and how it is used to access the EventStore Connection via `this.eventStore.connection`. This class comes from the [node-event-store-client](https://github.com/nicdex/node-eventstore-client#readme) which you can refer to for other things you'd like to do.
 
+Other things to try:
+
+- Consider receiving _Command_ events to perform the tasks that the REST endpoints are doing. You can generate these events through _Postamn_ or _Insomnia_ or even _curl_
+- Consider a competing subscription pattern where your service is cooperating with other workloads to work on an event stream. Use _Persisten Subscriptions_ for this
+
 ## License
 
 Nest is [MIT licensed](LICENSE).
