@@ -161,6 +161,7 @@ export const eventStoreBusConfig: EventStoreBusConfig = {
     {
       type: EventStoreSubscriptionType.CatchUp,
       stream: '$ce-todo',
+      startFrom: 0,
     },
   ],
   eventInstantiators: {
@@ -175,7 +176,7 @@ export const eventStoreBusConfig: EventStoreBusConfig = {
 }
 ```
 
-**Note:** At present _catch up_ will always catch up from the very first event in the stream each time the service is started. We will need to fork or add a PR to change this.
+**Note:** At present _catch up_ will always catch up from the very first event in the stream each time the service is started. The `startFrom` key could be modified to some other event number if you needed to start from somewhere else.
 
 ### Initialize the Application Module
 
