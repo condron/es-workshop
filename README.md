@@ -85,7 +85,7 @@ $ npm run test:cov
 The application is an Event Sourcing application setup to work using CQRS, or Command Query Response Segregation. This generally means, that Command Events are distinct from Queries. It is also setup to enable direct interactions with EventStore.
 
 <p align="center">
-  <a href="CQRSg" target="blank"><img src="doc/CQRS.svg" width="100%" alt="Todo App" /></a>
+  <a href="doc/CQRS.svg" target="blank"><img src="doc/CQRS.svg" width="100%" alt="Todo App" /></a>
 </p>
 
 The goal of this project is to provide a basic pattern for `creating`, `publishing`, `subscribing` to and `handling` events. Setting this up is pretty straightforward.
@@ -98,7 +98,7 @@ The goal of this project is to provide a basic pattern for `creating`, `publishi
 The starter code for this application models a _Todo List_ with a single event type, `TodoItemAddedEvent`, which gets generated when an _item_ is added to a _Todo Event Stream_. The application then subscribes to all `TodoAddedEvent`s by using a `catch-up` subscription to an EventStore `category` stream, where each stream is identified by `todo-<some id>`
 
 <p align="center">
-  <a href="ES-WorkshoApp" target="blank"><img src="doc/ES-Workshop App.svg" width="100%" alt="Todo App" /></a>
+  <a href="doc/ES-Worksho\ App.svg" target="blank"><img src="doc/ES-Workshop App.svg" width="100%" alt="Todo App" /></a>
 </p>
 
 ### Create the Event Data
