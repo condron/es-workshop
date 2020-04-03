@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common'
 import {
   EventStoreBusConfig,
   EventStoreSubscriptionType,
-} from 'nestjs-eventstore'
+} from '@wisersolutions/nestjs-eventstore'
 
 import { TodoItemData } from './todo/event-dtos'
 import { TodoItemAddedEvent } from './cqrs'
@@ -12,7 +12,7 @@ export const eventStoreBusConfig: EventStoreBusConfig = {
     {
       type: EventStoreSubscriptionType.CatchUp,
       stream: '$ce-todo',
-      startFrom: 3,
+      startFrom: 0,
     },
   ],
   eventInstantiators: {

@@ -30,11 +30,27 @@
 
 ### Intallation
 
+This project uses a public github node module. Unfortunately, this requires you to login to npm with a personal access token. You can create one of these Before starting.
+
+1. Visit [Personal access tokens](https://github.com/settings/tokens)
+2. Generate New Token
+3. Select `repo`, `write:packages` and `read:packages`
+4. Generate token
+
 ```bash
 $ touch .env
-$ docker-compose run app yarn install
+$ docker-compose run app /bin/sh
+/app # npm login
+Username: <github username>
+Password: <personal access token>
+Email: (this IS public) <your github email>
+Logged in as <github username> on https://registry.npmjs.org/.
+/app # yarn install
+/app # exit
 $ docker-compose up
 ```
+
+Next, startup the EventStore console in your browser at `http://localhost:2113`. The default user name is `admin` and password is `changeit`. Once you're in, visit the `Projections` page, select `$by_category` and when there, select `Run`. This will enable EventStore to return data by category. For example, you may have a stream per todo list with each stream name something like `todo-123`. Turning this feature on lets you subscribe to all events from todo streams with the subscription `$ce-todo`.
 
 ### Running the app
 
@@ -135,7 +151,7 @@ import { Logger } from '@nestjs/common'
 import {
   EventStoreBusConfig,
   EventStoreSubscriptionType,
-} from 'nestjs-eventstore'
+} from '@wisersolutions/nestjs-eventstore'
 
 import { TodoItemData } from './todo/event-dtos'
 import { TodoItemAddedEvent } from './cqrs'
@@ -172,7 +188,7 @@ import * as path from 'path'
 import { Module } from '@nestjs/common'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
-import { EventStoreCqrsModule } from 'nestjs-eventstore'
+import { EventStoreCqrsModule } from '@wisersolutions/nestjs-eventstore'
 import { TodoModule } from './todo/todo.module'
 import { ConfigModule, ConfigService } from 'nestjs-config'
 import { eventStoreBusConfig } from './event-bus.provider'
@@ -200,9 +216,9 @@ import { eventStoreBusConfig } from './event-bus.provider'
 export class AppModule {}
 ```
 
-## Beyond Subscriptions
+### Publishing Events
 
-The application has one controller with two routes. `GET todo` and `Post todo/:id`. The `GET` is a simple hello end point, but the `Post` is used to publish events to test out the event publishing and subscribing mechanism.
+This example application lets you publish your Todo Items through a REST interface. Adding items is done through a `Post` to `/todo/:id` that is implemented in the `TodoController` which goes on to call the `addItem` method of the `TodoService`.
 
 Publishing is quite simple and is done with the following code (found in `todo-service.ts`)
 
@@ -239,6 +255,43 @@ app_1          |     "value": "Something added via Curl"
 app_1          |   }
 app_1          | }
 ```
+
+### Retrieving Events etc.
+
+The `TodoController`s REST interface offers two routes `GET /todo` which lists all existing (or at most 1000) items and `GET /todo/:id` which will list the items from the stream with the supplied `id`.
+
+The code that does all of the lifting is
+
+```typescript
+async findItems(
+    streamName: string,
+    start: number,
+    pageSize: number,
+  ): Promise<string[]> {
+    let result: string[]
+
+    const eventSlice = await this.eventStore.connection.readStreamEventsForward(
+      streamName,
+      start,
+      pageSize,
+      true,
+    )
+
+    result = eventSlice.events.map((v, i, a) => {
+      const data: TodoItemAddedEvent = JSON.parse(
+        v.event.data.toString(),
+      ) as TodoItemAddedEvent
+      return data.toDoItemAddeddDto.value
+    })
+    return result
+  }
+```
+
+This is pretty boilerplate EventStore code where a stream is read with a starting point and a maximum number of events to return (as `pageSized`). Once the events have been returned, they are mapped to a `string[]`. Note how the event data is converted to `string` and parsed as JSON to deliver a `TodoItemAddedEvent`.
+
+## What's Next?
+
+Play with the application, there's alot more you can do. Note how the `EventStore` instance is injected into `TodoService` and how it is used to access the EventStore Connection via `this.eventStore.connection`. This class comes from the [node-event-store-client](https://github.com/nicdex/node-eventstore-client#readme) which you can refer to for other things you'd like to do.
 
 ## License
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Logger } from '@nestjs/common'
-import { EventBusProvider, EventStore } from 'nestjs-eventstore'
+import { EventBusProvider, EventStore } from '@wisersolutions/nestjs-eventstore'
 import { TodoItemData } from './event-dtos'
 import { TodoItemAddedEvent } from '../cqrs'
 
