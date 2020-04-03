@@ -24,13 +24,13 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) and [EventStore] framework TypeScript starter repository that will get you started building Event Sourced applications.
+[Nest](https://github.com/nestjs/nest) and [EventStore](https://eventstore.org) framework TypeScript starter repository with a simple _Todo_ application that will get you started building Event Sourced applications.
 
 ## Getting Started
 
 ### Intallation
 
-This project uses a public github node module. Unfortunately, this requires you to login to npm with a personal access token. You can create one of these Before starting.
+**Note:** _This project uses a public github node module. Unfortunately, this requires you to login to npm with a personal access token. You can create one of these before starting._
 
 1. Visit [Personal access tokens](https://github.com/settings/tokens)
 2. Generate New Token
@@ -50,13 +50,24 @@ Logged in as <github username> on https://registry.npmjs.org/.
 $ docker-compose up
 ```
 
-Next, startup the EventStore console in your browser at `http://localhost:2113`. The default user name is `admin` and password is `changeit`. Once you're in, visit the `Projections` page, select `$by_category` and when there, select `Run`. This will enable EventStore to return data by category. For example, you may have a stream per todo list with each stream name something like `todo-123`. Turning this feature on lets you subscribe to all events from todo streams with the subscription `$ce-todo`.
+**Startup EventStore and Turn on Category Streams**
+
+A _Category Stream_ is a special stream that represents all of the streams that share a specific pattern name. For our Todo example. You'll be creating streams with names like _todo-123_ and _todo-124_. The _Catefory Stream_ provides a stream of all events from streams that match _todo-<something else>_ and is call `$ce-todo`.
+
+1. Start EventStore open [http://localhost:2113](http://localhost:2113) in your browser
+2. Use the default username and password: `admin`, `changeit`
+3. Visit the [Projections](http://localhost:2113/web/index.html#/projections) page
+4. Select `$by-category` and click on `Start` once you are there.
+
+Now you should be able to subecribe to events from the `$ce-todo` stream.
 
 ### Running the app
 
-By default the application is run in `debug` mode using `yarn start:debug`. This enables remote debugging from `vscode` or your browser and also enables `watch` mode for incremental updates while you work on the project. Other options can be found in `package.json`
+By default the application is run in `debug` mode using `yarn start:debug`. This enables remote debugging from `vscode` or your browser. `watch` mode is also turned on for incremental updates while you work on the project. Other options can be found in `package.json`
 
 ## Test
+
+You'll find the usual test suite, though nothing has been done to provide tests for this example. This could be an area for exploration once you've got things working.
 
 ```bash
 # unit tests
@@ -73,17 +84,26 @@ $ npm run test:cov
 
 The application is an Event Sourcing application setup to work using CQRS, or Command Query Response Segregation. This generally means, that Command Events are distinct from Queries. It is also setup to enable direct interactions with EventStore.
 
-The goal of this project is to provide a basic pattern for `creating`, `publishing`, `subscribing` to and `handling` events. Setting this is pretty straightforward.
+<p align="center">
+  <a href="CQRSg" target="blank"><img src="doc/CQRS.svg" width="100%" alt="Todo App" /></a>
+</p>
+
+The goal of this project is to provide a basic pattern for `creating`, `publishing`, `subscribing` to and `handling` events. Setting this up is pretty straightforward.
 
 1. Create your event data structure as a `DTO`, or Data Transfer Object
 1. Add an Event Implementation
 1. Add an Event Handler
+1. Configure the app to connect to EventStore
 
-The starter code for this application models a _Todo List_ with a single event type, `TodoItemAddedEvent`, which get generated when an _item_ is added to a _Todo Event Stream_. The application subscribes to all `TodoAddedEvent`s by using a `catch-up` subscription to an EventStore `category` stream, where each stream is identified by `todo-<some id>`
+The starter code for this application models a _Todo List_ with a single event type, `TodoItemAddedEvent`, which gets generated when an _item_ is added to a _Todo Event Stream_. The application then subscribes to all `TodoAddedEvent`s by using a `catch-up` subscription to an EventStore `category` stream, where each stream is identified by `todo-<some id>`
+
+<p align="center">
+  <a href="ES-WorkshoApp" target="blank"><img src="doc/ES-Workshop App.svg" width="100%" alt="Todo App" /></a>
+</p>
 
 ### Create the Event Data
 
-In general event data, should be simple and should not be redundant. The starter code offers a single event data, `TodoItemData`. Given the simplicity of the data structure, the code for this is found in `tod/event-tdos.ts`.
+Before doing anything else, we'll need data to represent the events that occur on a stream. In general event data, should be simple and should not be redundant (think database 3rd normal form). Our starter code offers a single event data, `TodoItemData`. Given the simplicity of the data structure, the code is organized in a single file to hold all of the DTOs the the _Todo Module_ amd is found in `tod/event-tdos.ts`. If this gets to be large or complex, you may consider reorganizing the code.
 
 ```typescript
 /* tslint:disable */
@@ -97,11 +117,11 @@ Nothing complex, simply a class with `string` single value. Add other events her
 
 ### Create Events and Handlers
 
-Interacting with the event store will mean that your are both _publishing_, or _receiving_ events on the `EventBus`. There are three buses: `CommandBus`, `QueryBus` and `EventBus`. We're keeping it simple, so we're only using the `EventBus`. The other buses are identical, but used for _commands_ and _queries_, respectively.
+Interacting with the event store will mean that your are _publishing_, or _receiving_ events on the `EventBus`. There are three buses: `CommandBus`, `QueryBus` and `EventBus`. We're keeping it simple, so we're only using the `EventBus`. The other buses are identical, but used for _commands_ and _queries_, respectively.
 
 Each bus has a corresponding directory tree under the `cqrs` directory. If your application is complex and has several _modules_ and many events, you may want to organize your event data by _module_.
 
-So, our event code is all found under `cqrs/events`. Under here, you'll find the `handler` directory for _event handlers_ that get called when your _event subscription_ receives data and the `impl` directory with the implementation code for each event type. Note the `index.ts` setup to simplify inclusion of these events and handlers.
+Our event code is all found under `cqrs/events`. Here, you'll find the `handler` directory for _event handlers_ that get called when your _event subscription_ receives data and the `impl` directory with the implementation code for each event type. Note the `index.ts` setup to simplify inclusion of these events and handlers.
 
 Our very simple event looks like this
 
@@ -121,9 +141,9 @@ export class TodoItemAddedEvent implements IEvent {
 }
 ```
 
-**Note** how we've added an `_id` to use in order to identify the _stream id_ for an event instance, followed by the DTO data for the event. Its as simple as that. You may want to consider more complex meta data, but the approach would be the same.
+**Note** that we've added an `_id` to use in order to identify the _stream id_ for an event instance, followed by the DTO data for the event. Its as simple as that. You may want to consider more complex meta data, but the approach would be the same. _(We may also consider upgrading the framework to include the meta data for events as well)_
 
-The handler boilerplate looks like this
+The handler boilerplate looks like this...
 
 ```
 // cqrs/events/handler/todo-item-added-handler.ts
@@ -142,7 +162,7 @@ export class TodoItemAddedHandler implements IEventHandler<TodoItemAddedEvent> {
 
 ### Initialize the EventBus
 
-Now that you can create events and handler events, they need to be hooked into _EventStore_ and the _EventBus_. This is done in `event-bus.provider.ts`. The code here is used to setup subscriptions and map them to Events, so there handlers can be called when the subsribed events are received.
+Now that you can create events and handler events, they need to be hooked into _EventStore_ and the _EventBus_. This is done in `event-bus.provider.ts`. The code here is used to setup subscriptions and map them to Events. This is where handlers are setup to be called when the subscribed events are received.
 
 In this code, we've setup a `catch-up` subscription that subscribes to the `TodoItemAddedEvent`.
 
@@ -161,7 +181,7 @@ export const eventStoreBusConfig: EventStoreBusConfig = {
     {
       type: EventStoreSubscriptionType.CatchUp,
       stream: '$ce-todo',
-      startFrom: 0,
+      startFrom: 0, // Catch up from the very first event
     },
   ],
   eventInstantiators: {
@@ -176,13 +196,13 @@ export const eventStoreBusConfig: EventStoreBusConfig = {
 }
 ```
 
-**Note:** At present _catch up_ will always catch up from the very first event in the stream each time the service is started. The `startFrom` key could be modified to some other event number if you needed to start from somewhere else.
+**Note:** At present _catch up_ will always catch up from the very first event in the stream each time the service is started. The `startFrom` key could be modified to use some other event number if you needed to start from somewhere else as may be wanted on a restart.
 
 ### Initialize the Application Module
 
-The last piece of setup is to initialize _EventStore_ for the applications. This is done in `app.module.ts`
+The last piece of setup is to initialize _EventStore_ for the application. This is done in `app.module.ts`
 
-In this code, we're initializing using the `EentStoreCqrsModule` and getting configuration from the `ConfigService` service and the `eventStoreBusConfig`. Note also the addition of the `TodDoModule` where our controller and service code exists to manage ToDo lists.
+In this code, we're initializing using the `EentStoreCqrsModule` and getting configuration from the `ConfigService` service and the `eventStoreBusConfig`. Note the addition of the `TodDoModule` where our controller and service code exists to manage ToDo lists.
 
 ```typescript
 import * as path from 'path'
@@ -237,7 +257,7 @@ To use the `Post`, try the following:
 ```bash
 $ curl --header "Content-Type: application/json" \
   --request POST \
-  --data '{"value":"Something added via Curl"}' \
+  --data '{"value":"Learn about EventStore"}' \
   http://localhost:3000/todo/1
 ```
 
@@ -252,7 +272,7 @@ app_1          | [Nest] 64   - 04/02/2020, 11:05:04 AM   [TodoItemAddedHandler: 
 app_1          | {
 app_1          |   "_id": "1",
 app_1          |   "toDoItemAddeddDto": {
-app_1          |     "value": "Something added via Curl"
+app_1          |     "value": "Learn about EventStore"
 app_1          |   }
 app_1          | }
 ```
@@ -261,7 +281,7 @@ app_1          | }
 
 The `TodoController`s REST interface offers two routes `GET /todo` which lists all existing (or at most 1000) items and `GET /todo/:id` which will list the items from the stream with the supplied `id`.
 
-The code that does all of the lifting is
+The code that does all of the lifting is as follows...
 
 ```typescript
 async findItems(
@@ -288,15 +308,18 @@ async findItems(
   }
 ```
 
-This is pretty boilerplate EventStore code where a stream is read with a starting point and a maximum number of events to return (as `pageSized`). Once the events have been returned, they are mapped to a `string[]`. Note how the event data is converted to `string` and parsed as JSON to deliver a `TodoItemAddedEvent`.
+This is pretty boilerplate EventStore code where a stream is read with a starting point and a maximum number of events to return (as `pageSize`). Once the events have been returned, they are mapped to a `string[]`. Note how the event data is converted to `string` and parsed as JSON to deliver a `TodoItemAddedEvent`.
 
 ## What's Next?
 
-Play with the application, there's alot more you can do. Note how the `EventStore` instance is injected into `TodoService` and how it is used to access the EventStore Connection via `this.eventStore.connection`. This class comes from the [node-event-store-client](https://github.com/nicdex/node-eventstore-client#readme) which you can refer to for other things you'd like to do.
+Play with the application; there's a lot more you can do to build on this basic application. Note how the `EventStore` instance is injected into `TodoService` and how it is used to access the EventStore Connection via `this.eventStore.connection`. This class comes from the [node-event-store-client](https://github.com/nicdex/node-eventstore-client#readme) which you can refer to for other things you'd like to do.
 
 Other things to try:
 
-- Consider receiving _Command_ events to perform the tasks that the REST endpoints are doing. You can generate these events through _Postamn_ or _Insomnia_ or even _curl_
+- Play around with the _EventStore_ console
+- Consider a capability to remove items and how that might effect the design
+- Consider a done status for Todo Items
+- Consider receiving _Command_ events to perform the tasks that the REST endpoints are doing. You can generate these events through _Postman_ or _Insomnia_ or even _curl_
 - Consider a competing subscription pattern where your service is cooperating with other workloads to work on an event stream. Use _Persisten Subscriptions_ for this
 
 ## License
