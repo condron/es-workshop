@@ -1,0 +1,29 @@
+####
+# List out all of the todo items for all todo streams
+GET http://localhost:3000/todo
+Accept: application/json
+
+####
+# List out all of the todo items for the todo stream with id=1
+GET http://localhost:3000/todo/1
+Accept: application/json
+
+####
+# Add an item to todo list with id=1
+POST http://localhost:3000/todo/1
+Content-Type: application/json
+Accept: text
+
+{
+    "value": "Add some items to the todo list"
+}
+
+####
+# Add an item to todo list with id=2
+POST http://localhost:3000/todo/2
+Content-Type: application/json
+Accept: text
+
+{
+    "value": "Add something todo to another stream"
+}
