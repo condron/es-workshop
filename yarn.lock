@@ -4678,17 +4678,6 @@ nestjs-config@^1.4.5:
     reflect-metadata "^0.1.12"
     rxjs "^6.0.0"
 
-"nestjs-eventstore@github:WiserSolutions/nestjs-eventstore":
-  version "1.4.14"
-  resolved "https://codeload.github.com/WiserSolutions/nestjs-eventstore/tar.gz/f006fcf2577df8be2fd47094c598417feedd7b3c"
-  dependencies:
-    "@nestjs/common" "^6.8.5"
-    "@nestjs/core" "^6.8.5"
-    "@nestjs/cqrs" "^6.1.0"
-    node-eventstore-client "^0.2.13"
-    reflect-metadata "^0.1.12"
-    rxjs "^6.3.3"
-
 next-tick@1:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/next-tick/-/next-tick-1.1.0.tgz#1836ee30ad56d67ef281b22bd199f709449b35eb"

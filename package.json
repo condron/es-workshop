@@ -27,7 +27,6 @@
     "@nestjs/platform-express": "^7.0.0",
     "@wisersolutions/nestjs-eventstore": "1.4.21",
     "nestjs-config": "^1.4.5",
-    "nestjs-eventstore": "github:WiserSolutions/nestjs-eventstore",
     "node-eventstore-client": "^0.2.16",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",

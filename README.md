@@ -37,16 +37,16 @@
 3. Select `repo`, `write:packages` and `read:packages`
 4. Generate token
 
+Now edit the `.npmrc` file to include your token
+
+```
+//npm.pkg.github.com/:_authToken=<your github token here>
+@wisersolutions:registry=https://npm.pkg.github.com/
+```
+
 ```bash
 $ touch .env
-$ docker-compose run app /bin/sh
-/app # npm login
-Username: <github username>
-Password: <personal access token>
-Email: (this IS public) <your github email>
-Logged in as <github username> on https://registry.npmjs.org/.
-/app # yarn install
-/app # exit
+$ docker-compose run app yarn install
 $ docker-compose up
 ```
 
