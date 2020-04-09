@@ -21,6 +21,20 @@ services:
     networks:
       - backend
 
+  es-vanilla:
+    image: node:dubnium-alpine
+    restart: always
+    working_dir: /app
+    command:
+      - yarn
+      - start:vanilla
+    env_file:
+      - './.env'
+    volumes:
+      - $PWD:/app
+    networks:
+      - backend
+
   event-store:
     image: eventstore/eventstore
     env_file:
