@@ -26,6 +26,8 @@
 
 [Nest](https://github.com/nestjs/nest) and [EventStore](https://eventstore.org) framework TypeScript starter repository with a simple _Todo_ application that will get you started building Event Sourced applications.
 
+Two applications are provided. A main application follows a CQRS NestJS pattern (see below for details), while another, `es-vanilla` demonstrates a frameworkless approach that might be incorporated into any existing program. This program simply susbcribes to and logs all event activitiy, but could be modified to do pretty much anything.
+
 ## Getting Started
 
 ### Intallation
@@ -50,16 +52,19 @@ $ docker-compose run app yarn install
 $ docker-compose up
 ```
 
-**Startup EventStore and Turn on Category Streams**
+**Startup EventStore and Verify That Category Streams are Enabled**
 
-A _Category Stream_ is a special stream that represents all of the streams that share a specific pattern name. For our Todo example. You'll be creating streams with names like _todo-123_ and _todo-124_. The _Catefory Stream_ provides a stream of all events from streams that match _todo-<something else>_ and is call `$ce-todo`.
+A _Category Stream_ is a special stream that represents all of the streams that share a specific pattern name. For our Todo example. You'll be creating streams with names like _todo-123_ and _todo-124_. The _Catefory Stream_ provides a stream called a _Projection_ of all events from streams that match _todo-<something else>_ and is call `$ce-todo`. There are other kinds of _Projections_ but they are not used in this example. These _Projections_ are turned on by the `EVENTSTORE_START_STANDARD_PROJECTIONS` environment variable found in the `.env` file.
+
+You can verify these are all set by doing the following:
 
 1. Start EventStore open [http://localhost:2113](http://localhost:2113) in your browser
 2. Use the default username and password: `admin`, `changeit`
 3. Visit the [Projections](http://localhost:2113/web/index.html#/projections) page
-4. Select `$by-category` and click on `Start` once you are there.
+4. You should see that the status of the `$by-category` and others is `Running`
+5. If it isn't running, you can select `$by-category` and click on `Start` once you are there.
 
-Now you should be able to subecribe to events from the `$ce-todo` stream.
+Now you should be able to subscribe to events from the `$ce-todo` stream.
 
 ### Running the app
 
